@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Assets.Game.Character.Scripts.Interacters;
+
+using UnityEngine;
 
 namespace Assets.Game.Character.Scripts
 {
@@ -6,17 +8,32 @@ namespace Assets.Game.Character.Scripts
     {
         [SerializeField] private CharacterSettingData data;
         [SerializeField] private bool canMove = true;
-       
+        public GameObject hint;
         private bool Moving;
         private float vertical;
         private float horizontal;
         private float Lookvertical;
         private float Lookhorizontal;
         private float rotationX = 0;
+
         private float InstallFOV;
         private Vector3 moveDirection = Vector3.zero;
         private CharacterController characterController;
         private Camera cam;
+        private IInteracter interacter;
+        private bool canInteract;
+
+        public void Interacted(IInteracter interacter, bool canInteract)
+        {
+            hint.SetActive(canInteract);
+            this.interacter = interacter;
+            this.canInteract = canInteract;
+        }
+
+        internal void CanMove(bool v)
+        {
+            canMove = v;
+        }
 
         private void Start()
         {
@@ -48,7 +65,8 @@ namespace Assets.Game.Character.Scripts
             characterController.Move(moveDirection * Time.deltaTime);
             Moving = horizontal < 0 || vertical < 0 || horizontal > 0 || vertical > 0 ? true : false;
 
-            
+            if (canMove)
+            {
                 Lookvertical = -Input.GetAxis("Mouse Y");
                 Lookhorizontal = Input.GetAxis("Mouse X");
 
@@ -59,7 +77,13 @@ namespace Assets.Game.Character.Scripts
 
                 if (Moving)
                     cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, InstallFOV, data.ReturnSpeedCamera * Time.deltaTime);
+            }
 
+            if (Input.GetKeyDown(KeyCode.E) && canInteract && interacter!= null)
+            {
+                interacter.InvokeIneract();
+                hint.SetActive(false);
+            }
         }
 
     }
