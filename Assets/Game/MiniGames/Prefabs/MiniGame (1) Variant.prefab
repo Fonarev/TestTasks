@@ -158,13 +158,25 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2830885481010949032, guid: c2aae1eb11ff26b44bb09d3315214f7b, type: 3}
+      propertyPath: data
+      value: 
+      objectReference: {fileID: 11400000, guid: 94c837899431a874ebdab253d395c134, type: 2}
+    - target: {fileID: 2830885481010949032, guid: c2aae1eb11ff26b44bb09d3315214f7b, type: 3}
       propertyPath: gameType
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2830885481010949032, guid: c2aae1eb11ff26b44bb09d3315214f7b, type: 3}
+      propertyPath: gameBoard
+      value: 
+      objectReference: {fileID: 4599940161079976493, guid: 181d201060e350a49982db1f9bbe4bb2, type: 3}
+    - target: {fileID: 2830885481010949032, guid: c2aae1eb11ff26b44bb09d3315214f7b, type: 3}
       propertyPath: levelTask
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 2830885481010949032, guid: c2aae1eb11ff26b44bb09d3315214f7b, type: 3}
+      propertyPath: materialTargetGraphic
+      value: 
+      objectReference: {fileID: 2100000, guid: 4da47427dc2fe234f877ca25ef079247, type: 2}
     - target: {fileID: 4410176909332203078, guid: c2aae1eb11ff26b44bb09d3315214f7b, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -176,6 +188,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 2711480091417206730, guid: c2aae1eb11ff26b44bb09d3315214f7b, type: 3}
+    - {fileID: 4410176909332203078, guid: c2aae1eb11ff26b44bb09d3315214f7b, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 2487344851658608498, guid: c2aae1eb11ff26b44bb09d3315214f7b, type: 3}
       insertIndex: -1

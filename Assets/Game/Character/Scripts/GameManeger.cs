@@ -1,4 +1,5 @@
 ﻿using Assets.Game.MiniGames.Scripts;
+using Assets.Game.Scripts.UI;
 
 using System.Collections.Generic;
 
@@ -8,21 +9,39 @@ namespace Assets.Game.Character.Scripts
 {
     public class GameManeger : MonoBehaviour
     {
-        public List<MiniGame> miniGames;
-        public PlayerController playerController;
+        [SerializeField] private IInputPlayer inputPlayer;
+        [SerializeField] private GlobalCanvas globalCanvas;
+        [SerializeField] private PlayerController playerController;
+        [SerializeField] private List<MiniGame> miniGames;
 
-        void Start()
+        private static GameManeger gameManeger;
+        
+        public static GameManeger GameManager => gameManeger;
+
+        private void Awake()=> gameManeger = this;
+       
+        private void Start()=> Init();
+
+        private void Update()
         {
+            if(inputPlayer!= null) inputPlayer.UpData();
+
+        }
+
+        private void Init()
+        {
+            playerController.Init(inputPlayer);
+
             foreach (var game in miniGames)
             {
-                game.Init();
+                game.Init(globalCanvas);
                 game.OnOpenedMiniGame += OnOpenMiniGame;
             }
         }
-
-        private void OnOpenMiniGame(bool obj)
+        
+        private void OnOpenMiniGame(bool state)
         {
-            playerController.CanMove(!obj);
+            playerController.CanMove(!state);
         }
     }
 }

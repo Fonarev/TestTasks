@@ -4,11 +4,14 @@ using UnityEngine;
 
 namespace Assets.Game.Character.Scripts
 {
+    [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
         [SerializeField] private CharacterSettingData data;
-        [SerializeField] private bool canMove = true;
-        public GameObject hint;
+        [SerializeField] private GameObject hint;
+
+        private IInputPlayer inputPlayer;
+        private bool canMove;
         private bool Moving;
         private float vertical;
         private float horizontal;
@@ -23,6 +26,12 @@ namespace Assets.Game.Character.Scripts
         private IInteracter interacter;
         private bool canInteract;
 
+        public void Init(IInputPlayer inputPlayer)
+        {
+            this.inputPlayer = inputPlayer;
+            canMove = true;
+        }
+
         public void Interacted(IInteracter interacter, bool canInteract)
         {
             hint.SetActive(canInteract);
@@ -30,7 +39,7 @@ namespace Assets.Game.Character.Scripts
             this.canInteract = canInteract;
         }
 
-        internal void CanMove(bool v)
+        public void CanMove(bool v)
         {
             canMove = v;
         }

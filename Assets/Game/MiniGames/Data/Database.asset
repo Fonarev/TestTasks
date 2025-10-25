@@ -10,25 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f3e36320fbe13044d87c9af8c228b897, type: 3}
-  m_Name: MiniGameData
+  m_Name: Database
   m_EditorClassIdentifier: 
-  numbers:
-  - 1
-  - 2
-  - 3
-  - 4
-  - 5
-  - 6
-  - 7
-  - 8
-  - 9
-  Words:
-  - Set
-  - Order
-  - new
-  - first
-  - Hour
-  - Day
-  - Weeks
-  - Month
-  - Years
+  settingsData:
+  - {fileID: 11400000, guid: 23d4302d8973f0a41bd7a490eed58d93, type: 2}
+  - {fileID: 11400000, guid: b8c61ff7282944540b2ce4964f073c8d, type: 2}
