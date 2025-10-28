@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Assets.Game.Scripts;
+
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -7,7 +9,7 @@ namespace Assets.Game.MiniGames.Scripts
     [CreateAssetMenu(fileName = "Database", menuName = "Test/Database")]
     public class MiniGameDatabase : ScriptableObject
     {
-        [SerializeField] private List<SettingsMiniGameData> settingsData;
+        [SerializeField] private SettingsMiniGameData[] settingsData;
 
         Dictionary<MiniGameType, SettingsMiniGameData> settigsLinks = new();
 
@@ -33,43 +35,24 @@ namespace Assets.Game.MiniGames.Scripts
 
         public List<string> GetContent(MiniGameType type, int amount, bool isRandom = false)
         {
-            List<string> newContent = new();
-
             if (settigsLinks.TryGetValue(type, out SettingsMiniGameData settingsData))
             {
-                List<string> content = settingsData.Content;
-
                 if (isRandom)
                 {
-                    List<string> dynamicList = new();
-
-                    foreach (var con in content) dynamicList.Add(con);
-
-                    for (int i = 0; i < amount; i++)
-                    {
-                        var randomIndex = Random.Range(0, dynamicList.Count);
-                        newContent.Add(dynamicList[randomIndex]);
-                        dynamicList.RemoveAt(randomIndex);
-                    }
-
-                    newContent.Sort();
+                    return Randomer.GetNonrepeatingItems(settingsData.Content, amount);
                 }
                 else
                 {
-                    for (int i = 0; i < amount; i++)
-                    {
-                        newContent.Add(content[i]);
-                    }
+                    return settingsData.Content.GetRange(0, amount);
                 }
 
-               
             }
             else
             {
                 Debug.LogError("[MiniGameData] No settings data!" + type + "  is not found");
             }
 
-            return newContent;
+            return null;
         }
       
     }

@@ -11,13 +11,21 @@ namespace Assets.Game.Character.Scripts
         Transform container;
         List<T> list = new();
         bool autoSize;
-
+        GameObject newContainerObject;
         public SimplePool(T prefab, bool autoSize, int amount = 2, Transform container = null)
         {
             this.prefab = prefab;
             this.autoSize = autoSize;
             this.amount = amount;
-            this.container = container == null?  new GameObject("[Container]").transform : container;
+            if(container == null)
+            {
+                newContainerObject = new GameObject("[Container]");
+                this.container = newContainerObject.transform;
+            }
+           else
+           {
+                this.container = container;
+           }
         }
 
         public void Create()
@@ -30,7 +38,7 @@ namespace Assets.Game.Character.Scripts
             }
         }
         
-        public T Get(T prefab, Transform parent, bool isActivat = true)
+        public T Get(Transform parent, bool isActivat = true)
         {
             for (int i = 0; i < list.Count; i++)
             {
@@ -48,7 +56,7 @@ namespace Assets.Game.Character.Scripts
             {
                 var newObj = Object.Instantiate(prefab, parent, false);
                 newObj.gameObject.SetActive(isActivat);
-
+                list.Add(newObj);
                 return newObj;
             }
 
@@ -59,6 +67,19 @@ namespace Assets.Game.Character.Scripts
         {
             prefab.SetActive(false);
             prefab.transform.SetParent(container,false);
+        }
+
+        public void ClierPool()
+        {
+            foreach (var item in list)
+            {
+                Object.Destroy(item.gameObject);
+            }
+
+            if(newContainerObject!= null)
+            {
+                Object.Destroy(newContainerObject);
+            }
         }
 
     }

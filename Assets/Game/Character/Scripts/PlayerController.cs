@@ -1,99 +1,103 @@
 ﻿using Assets.Game.Character.Scripts.Interacters;
+using Assets.Game.Scripts.InputSystem;
 
 using UnityEngine;
 
 namespace Assets.Game.Character.Scripts
 {
     [RequireComponent(typeof(CharacterController))]
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : MonoBehaviour, IControllable
     {
-        [SerializeField] private CharacterSettingData data;
+        [SerializeField] private Settings settings;
+        [SerializeField] private InputController inputController;
         [SerializeField] private GameObject hint;
-
-        private IInputPlayer inputPlayer;
-        private bool canMove;
+       
         private bool Moving;
-        private float vertical;
-        private float horizontal;
-        private float Lookvertical;
-        private float Lookhorizontal;
+        public float speed;
+
         private float rotationX = 0;
+        private float rotationY = 0;
 
         private float InstallFOV;
         private Vector3 moveDirection = Vector3.zero;
+        private float movementDirectionY;
         private CharacterController characterController;
         private Camera cam;
         private IInteracter interacter;
         private bool canInteract;
 
-        public void Init(IInputPlayer inputPlayer)
-        {
-            this.inputPlayer = inputPlayer;
-            canMove = true;
-        }
+        public float acceleration = 6;
+        public float maxSpeed = 12;
 
-        public void Interacted(IInteracter interacter, bool canInteract)
-        {
-            hint.SetActive(canInteract);
-            this.interacter = interacter;
-            this.canInteract = canInteract;
-        }
+        public Transform Transform => transform;
 
-        public void CanMove(bool v)
-        {
-            canMove = v;
-        }
-
-        private void Start()
+        private void Awake()
         {
             characterController = GetComponent<CharacterController>();
             cam = GetComponentInChildren<Camera>();
+
             InstallFOV = cam.fieldOfView;
         }
 
-        private void Update()
+        public void Move(Vector3 direction)
+        {
+            moveDirection = direction;
+            characterController.Move(settings.Speed * Time.deltaTime * moveDirection);
+        }
+
+        public void MoveMouse(float vertical, float horizontal)
+        {
+            rotationX += vertical * settings.LookVelosity;
+            rotationX = Mathf.Clamp(rotationX, -settings.LookLimit_X, settings.LookLimit_X);
+            cam.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+            transform.rotation *= Quaternion.Euler(0, horizontal * settings.LookVelosity, 0);
+
+            //rotationY += vertical * settings.LookVelosity;
+            //rotationY = Mathf.Clamp(rotationY, -settings.LookLimit_Y, settings.LookLimit_Y);
+            //cam.transform.localRotation = Quaternion.Euler(rotationX, rotationY, 0);
+
+            if (Moving)
+                cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, InstallFOV, settings.ReturnSpeedCamera * Time.deltaTime);
+        }
+
+        public void Jump()
         {
             if (!characterController.isGrounded)
-                moveDirection.y -= data.Gravity * Time.deltaTime;
+                moveDirection.y -= settings.Gravity * Time.deltaTime;
 
-            Vector3 forward = transform.TransformDirection(Vector3.forward);
-            Vector3 right = transform.TransformDirection(Vector3.right);
+            var movementDirectionY = moveDirection.y;
 
-            vertical = canMove ? data.Speed * Input.GetAxis("Vertical") : 0;
-            horizontal = canMove ? data.Speed * Input.GetAxis("Horizontal") : 0;
-
-            float movementDirectionY = moveDirection.y;
-
-            moveDirection = (forward * vertical) + (right * horizontal);
-
-            if (Input.GetButton("Jump") && canMove && characterController.isGrounded)
-                moveDirection.y = data.JumpHeight;
+            if (characterController.isGrounded)
+                moveDirection.y = settings.JumpHeight;
             else
                 moveDirection.y = movementDirectionY;
+        }
 
-            characterController.Move(moveDirection * Time.deltaTime);
-            Moving = horizontal < 0 || vertical < 0 || horizontal > 0 || vertical > 0 ? true : false;
+        public void Squats()
+        {
 
-            if (canMove)
-            {
-                Lookvertical = -Input.GetAxis("Mouse Y");
-                Lookhorizontal = Input.GetAxis("Mouse X");
+        }
 
-                rotationX += Lookvertical * data.LookSpeed;
-                rotationX = Mathf.Clamp(rotationX, -data.LookLimit, data.LookLimit);
-                cam.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
-                transform.rotation *= Quaternion.Euler(0, Lookhorizontal * data.LookSpeed, 0);
-
-                if (Moving)
-                    cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, InstallFOV, data.ReturnSpeedCamera * Time.deltaTime);
-            }
-
-            if (Input.GetKeyDown(KeyCode.E) && canInteract && interacter!= null)
+        public void Interact()
+        {
+            if (canInteract && interacter != null)
             {
                 interacter.InvokeIneract();
                 hint.SetActive(false);
             }
         }
 
+        public void CanInteract(IInteracter interacter, bool canInteract)
+        {
+            hint.SetActive(canInteract);
+            this.interacter = interacter;
+            this.canInteract = canInteract;
+        }
+
+        public void CanMove(bool isEnable)
+        {
+            inputController.Switch(isEnable);
+        }
+       
     }
 }

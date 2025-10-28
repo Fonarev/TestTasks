@@ -10,26 +10,36 @@ namespace Assets.Game.MiniGames.Scripts
 {
     public class Cell : MonoBehaviour, IPointerClickHandler
     {
-        public event Action<bool, string> OnPresseted;
+        public Action<int, bool> OnClick;
         public Image tile;
         public TextMeshProUGUI text;
-        private string id;
+        private int id;
         private bool presset;
+        public string Con { get; private set; }
 
-        public void Set(string id)
+        public void Init(string content,Action<int, bool> onClick)
         {
-            this.id = id;
-            text.text = id;
+            Con = content;
+            text.text = content;
+            presset = false;
+            tile.transform.localScale = new Vector3(1f, 1f, 1f);
+            OnClick = onClick;
+        }
+
+        public void Res()
+        {
             presset = false;
             tile.transform.localScale = new Vector3(1f, 1f, 1f);
         }
 
+        public void SetID(int id) => this.id = id;
+      
         public void OnPointerClick(PointerEventData eventData)
         {
-            presset = presset == true ? false : true;
+            presset = presset != true;
             tile.transform.localScale = presset == true ? new Vector3(1.3f, 1.3f, 1.3f) : new Vector3(1f, 1f, 1f);
-            
-            OnPresseted?.Invoke(presset, id);
+
+            OnClick?.Invoke(id, presset);
         }
     }
 }

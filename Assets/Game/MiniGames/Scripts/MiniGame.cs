@@ -9,132 +9,173 @@ using UnityEngine;
 
 namespace Assets.Game.MiniGames.Scripts
 {
-    public class MiniGame : MonoBehaviour, IInteracter
+    public class MiniGame : MonoBehaviour, IInteracter, IMiniGame
     {
         public event Action<bool> OnOpenedMiniGame;
-      
+
         [SerializeField] private bool randomGetContent;
         [SerializeField, Range(3, 10)] private int levelTask;
         [SerializeField] private MiniGameType gameType;
-        
+
         [SerializeField] private MiniGameDatabase data;
         [SerializeField] private GameBoard gameBoard;
+       
         [SerializeField] private InteractZone interactZone;
         [SerializeField] private Material materialTargetGraphic;
 
-        private Color colorTarget;
-        private int conditionsOrder;
+        private bool isOpenGame;
+        private int matching;
         private int order;
-        private List<string> contentTasks = new();
-        private Dictionary<string, int> map = new();
+        private Color colorTarget;
         private IContainer container;
         private GameBoard gameBoardUI;
+        private SimplePool<Cell> poolCell;
 
-        public MiniGameType GameType => gameType;
-        public int LevelTask => levelTask;
-
-        public void Init(IContainer container)
+        private int Order
         {
+            get => order;
+            set
+            {
+                order = value;
+                if (order < 0) order = 0;
+
+                if (Order < Matching)
+                    Matching --;
+            }
+        }
+
+        private int Matching
+        {
+            get => matching;
+            set
+            {
+                matching = value;
+
+                if (matching < 0)
+                    matching = 0;
+            }
+        }
+
+        private bool IsOpenGame
+        {
+            get => isOpenGame;
+            set
+            {
+                isOpenGame = value;
+                OnOpenedMiniGame?.Invoke(isOpenGame);
+            }
+        }
+
+        public void Init(IContainer container, SimplePool<Cell> poolCell)
+        {
+            this.poolCell = poolCell;
             this.container = container;
+
             data.Init();
+
             interactZone.Init(this);
-            SetNewData();
-           
+
             colorTarget = materialTargetGraphic.color;
         }
 
         public void InvokeIneract()
         {
-            SetNewData();
-
-            if(gameBoardUI == null)
+            if (!IsOpenGame)
             {
-                gameBoardUI = Instantiate(gameBoard, container.Parent, false);
-                gameBoardUI.Init(data.GetSettingsData(gameType));
-                gameBoardUI.OnPressedCell += ConditionsCheck;
+                if (gameBoardUI == null)
+                {
+                    gameBoardUI = Instantiate(gameBoard, container.Parent, false);
+                    gameBoardUI.Init(this, data.GetSettingsData(gameType), poolCell);
+                }
+                else
+                {
+                    if (gameBoardUI.gameObject != null && !gameBoardUI.gameObject.activeSelf)
+                        gameBoardUI.gameObject.SetActive(true);
+                }
+
+                gameBoardUI.OpenBoard(GetNewData());
+
+                IsOpenGame = true;
+
+                materialTargetGraphic.color = colorTarget;
             }
-           
-            gameBoardUI.gameObject.SetActive(true);
-            gameBoardUI.OpenBoard(contentTasks, Exit);
-
-            OnOpenedMiniGame?.Invoke(true);
-
-            materialTargetGraphic.color = colorTarget;
         }
 
-        public void OnZoneEnter(PlayerController player)
+        public void Restart()
         {
-            player.Interacted(this, true);
-            materialTargetGraphic.color = Color.green;
+            Matching = 0;
+            Order = 0;
+            gameBoardUI.Restart(GetNewData());
         }
 
-        public void OnZoneExit(PlayerController player)
+        public void Exit()
         {
-            player.Interacted(null, false);
-            materialTargetGraphic.color = colorTarget;
+            Resume();
         }
 
-        private void Restart()
-        {
-            conditionsOrder = 0;
-            order = 0;
-            SetNewData();
-            gameBoardUI.Restart(contentTasks);
-        }
-
-        private void Exit()
-        {
-            conditionsOrder = 0;
-            order = 0;
-            gameBoardUI.gameObject.SetActive(false);
-            OnOpenedMiniGame?.Invoke(false);
-        }
-
-        private void ConditionsCheck(bool presset, string id)
+        public void ConditionsCheck(int id, bool presset)
         {
             if (presset)
             {
-                if (map[id] == order)
+                if (id == Order)
                 {
-                    conditionsOrder++;
+                    Matching++;
                 }
-                order++;
+                Order++;
             }
             else
             {
-                order--;
+                if (Matching == id && id == Order)
+                {
+                    Matching--;
+                }
+                Order--;
             }
 
-            if (order >= levelTask)
+            if (Order >= levelTask)
             {
-                if (conditionsOrder >= levelTask)
+                if (Matching >= levelTask)
                 {
-                    conditionsOrder = 0;
-                    order = 0;
-                    gameBoardUI.gameObject.SetActive(false);
-                    OnOpenedMiniGame?.Invoke(false);
+                    Resume();
                 }
                 else
                 {
                     Restart();
                 }
-
             }
         }
 
-        private void SetNewData()
+        public void OnZoneEnter(PlayerController player)
         {
-            contentTasks.Clear();
-            contentTasks = data.GetContent(gameType, levelTask, randomGetContent);
+            player.CanInteract(this, true);
+            materialTargetGraphic.color = Color.green;
+        }
 
-            map.Clear();
-            for (int i = 0; i < contentTasks.Count; i++) map[contentTasks[i]] = i;
+        public void OnZoneExit(PlayerController player)
+        {
+            player.CanInteract(null, false);
+            materialTargetGraphic.color = colorTarget;
+        }
+
+        private void Resume()
+        {
+            Matching = 0;
+            Order = 0;
+
+            if(gameBoardUI.gameObject != null && gameBoardUI.gameObject.activeSelf)
+               gameBoardUI.gameObject.SetActive(false);
+
+            IsOpenGame = false;
+        }
+
+        private List<string> GetNewData()
+        {
+            return data.GetContent(gameType, levelTask, randomGetContent);
         }
 
         private void OnDisable()
         {
             materialTargetGraphic.color = colorTarget;
-            if(gameBoardUI!= null) gameBoardUI.OnPressedCell -= ConditionsCheck;
         }
 
     }

@@ -156,6 +156,7 @@ MonoBehaviour:
   gameType: 0
   data: {fileID: 11400000, guid: 94c837899431a874ebdab253d395c134, type: 2}
   gameBoard: {fileID: 4599940161079976493, guid: 181d201060e350a49982db1f9bbe4bb2, type: 3}
+  cellPrefab: {fileID: 2023119210313563812, guid: dcc4418e9cba78c41836e5e1301f5632, type: 3}
   interactZone: {fileID: 5587853978271464324}
   materialTargetGraphic: {fileID: 2100000, guid: e49d068e2d04a504dbcbf87bd9e2ce2c, type: 2}
 --- !u!1001 &7009258776971351065
